@@ -2,6 +2,8 @@
 
 ParamDiff — decode, expand, and diff URL query params
 
+![ParamDiff screenshot](ParmDiff.png)
+
 A small web app for inspecting and comparing URLs — paste 1–4 URLs, peel back URL-encoding layer by layer, expand nested query strings, and diff query parameters across URLs side by side.
 
 ## Download
