@@ -67,6 +67,7 @@ export function makeParam(key: string, rawValue: string): Param {
 export function parseUrl(input: string): ParsedUrl {
   const trimmed = input.trim();
   if (!trimmed) return { base: '', params: [] };
+  if (!trimmed.includes('?')) return { base: trimmed, params: [] };
   const { base, pairs } = splitQuery(trimmed);
   return {
     base,
