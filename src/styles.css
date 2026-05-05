@@ -16,6 +16,24 @@
   --badge-text: #b8c8e8;
 }
 
+[data-theme="light"] {
+  --bg: #f6f7fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f6;
+  --border: #d4dae3;
+  --text: #1a1d24;
+  --muted: #5b6473;
+  --accent: #1f6feb;
+  --same: #d6f0dd;
+  --same-text: #1e6b30;
+  --diff: #fbdcd5;
+  --diff-text: #8a2a1c;
+  --missing: #ebecef;
+  --missing-text: #8a8f99;
+  --badge-bg: #dde7fb;
+  --badge-text: #2a4485;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -45,13 +63,29 @@ code {
   padding: 1.5rem;
 }
 
+.app-header {
+  margin-bottom: 1.5rem;
+}
+
+.app-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
 .app-header h1 {
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   font-size: 1.6rem;
 }
 
 .app-header p {
-  margin: 0 0 1.5rem 0;
+  margin: 0;
+}
+
+.theme-toggle {
+  flex-shrink: 0;
 }
 
 /* URL inputs ---------------------------------------------------------------- */

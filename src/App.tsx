@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ParsedUrl } from './types';
 import {
   parseUrl,
@@ -13,6 +13,8 @@ import { DiffView } from './components/DiffView';
 
 const MAX_URLS = 4;
 
+type Theme = 'dark' | 'light';
+
 type Slot = {
   raw: string;
   parsed: ParsedUrl;
@@ -22,8 +24,24 @@ function emptySlot(): Slot {
   return { raw: '', parsed: { base: '', params: [] } };
 }
 
+function getInitialTheme(): Theme {
+  const fromAttr = document.documentElement.dataset.theme;
+  if (fromAttr === 'dark' || fromAttr === 'light') return fromAttr;
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark' || stored === 'light') return stored;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
 export default function App() {
   const [slots, setSlots] = useState<Slot[]>([emptySlot()]);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
   const setRaw = (idx: number, raw: string) => {
     setSlots((prev) =>
@@ -56,7 +74,17 @@ export default function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>ParamDiff</h1>
+        <div className="app-header-top">
+          <h1>ParamDiff</h1>
+          <button
+            type="button"
+            className="btn theme-toggle"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+          >
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
+        </div>
         <p className="muted">
           Paste 1–4 URLs. Each query parameter shows as a row — click <strong>Decode</strong> to peel one
           URL-encoding layer (repeat for double-encoded values), or <strong>Expand</strong> to break a
