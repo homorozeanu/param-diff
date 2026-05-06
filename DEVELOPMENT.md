@@ -60,3 +60,28 @@ src/
     ParamRow.tsx            # Recursive row with Decode/Expand/Reset
     DiffView.tsx            # Unified diff table across active URLs
 ```
+
+## Testing
+
+Vitest (jsdom environment) drives both unit tests for `parse.ts` and component tests written with React Testing Library and `@testing-library/user-event`.
+
+```bash
+npm test                # one-off run (used by CI)
+npm run test:watch      # watch mode for local iteration
+npm run test:coverage   # v8 coverage report
+```
+
+Tests are co-located with the code they cover — `parse.test.ts` next to `parse.ts`, `ParamRow.test.tsx` next to `ParamRow.tsx`, etc. Shared setup lives in `src/test/setup.ts` and registers `@testing-library/jest-dom` matchers plus a per-test `cleanup`.
+
+Component tests favour behaviour over markup: render the component, drive it with `userEvent`, then assert via `screen.getByRole` / `getByText`. Snapshot tests are deliberately avoided.
+
+`tsc -b` (run as part of `npm run build`) type-checks the test files alongside the source, so a type error in a test will fail the build.
+
+### Coverage in CI
+
+The CI workflow runs `npm run test:coverage`. The v8 provider emits two reporters:
+
+- `text` — a per-file table in the job log.
+- `json-summary` — `coverage/coverage-summary.json`, which a follow-up CI step pipes through `jq` into a markdown table written to `$GITHUB_STEP_SUMMARY`. Totals show on the run summary page without any third-party service.
+
+The `coverage/` directory is gitignored.
