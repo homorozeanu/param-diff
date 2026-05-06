@@ -5,6 +5,7 @@ dist-ssr
 .vite
 .DS_Store
 .claude/
+coverage
 
 # TypeScript build artifacts
 *.tsbuildinfo
