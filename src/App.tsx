@@ -16,12 +16,13 @@ const MAX_URLS = 4;
 type Theme = 'dark' | 'light';
 
 type Slot = {
+  id: string;
   raw: string;
   parsed: ParsedUrl;
 };
 
 function emptySlot(): Slot {
-  return { raw: '', parsed: { base: '', params: [] } };
+  return { id: crypto.randomUUID(), raw: '', parsed: { base: '', params: [] } };
 }
 
 function getInitialTheme(): Theme {
@@ -29,7 +30,7 @@ function getInitialTheme(): Theme {
   if (fromAttr === 'dark' || fromAttr === 'light') return fromAttr;
   const stored = localStorage.getItem('theme');
   if (stored === 'dark' || stored === 'light') return stored;
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return globalThis.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
 export default function App() {
@@ -45,7 +46,7 @@ export default function App() {
 
   const setRaw = (idx: number, raw: string) => {
     setSlots((prev) =>
-      prev.map((s, i) => (i === idx ? { raw, parsed: parseUrl(raw) } : s)),
+      prev.map((s, i) => (i === idx ? { ...s, raw, parsed: parseUrl(raw) } : s)),
     );
   };
 
@@ -131,7 +132,7 @@ export default function App() {
 
       <section className="urls">
         {slots.map((slot, i) => (
-          <div key={i} className="url-block">
+          <div key={slot.id} className="url-block">
             <UrlInput
               index={i}
               value={slot.raw}

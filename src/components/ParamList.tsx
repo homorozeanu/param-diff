@@ -2,11 +2,11 @@ import type { ParsedUrl } from '../types';
 import { ParamRow } from './ParamRow';
 
 type Props = {
-  parsed: ParsedUrl;
-  index: number;
-  onDecode: (id: string) => void;
-  onExpand: (id: string) => void;
-  onReset: (id: string) => void;
+  readonly parsed: ParsedUrl;
+  readonly index: number;
+  readonly onDecode: (id: string) => void;
+  readonly onExpand: (id: string) => void;
+  readonly onReset: (id: string) => void;
 };
 
 export function ParamList({ parsed, index, onDecode, onExpand, onReset }: Props) {

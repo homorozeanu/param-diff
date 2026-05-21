@@ -2,11 +2,11 @@ import type { Param } from '../types';
 import { canDecodeFurther, looksExpandable } from '../parse';
 
 type Props = {
-  param: Param;
-  depth: number;
-  onDecode: (id: string) => void;
-  onExpand: (id: string) => void;
-  onReset: (id: string) => void;
+  readonly param: Param;
+  readonly depth: number;
+  readonly onDecode: (id: string) => void;
+  readonly onExpand: (id: string) => void;
+  readonly onReset: (id: string) => void;
 };
 
 export function ParamRow({ param, depth, onDecode, onExpand, onReset }: Props) {

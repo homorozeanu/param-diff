@@ -18,7 +18,7 @@ function setMatchMedia(prefersLight: boolean) {
     removeListener: () => {},
     dispatchEvent: () => false,
   });
-  Object.defineProperty(window, 'matchMedia', {
+  Object.defineProperty(globalThis, 'matchMedia', {
     configurable: true,
     writable: true,
     value: vi.fn().mockImplementation(mql),
@@ -26,7 +26,6 @@ function setMatchMedia(prefersLight: boolean) {
 }
 
 function resetThemeEnvironment() {
-  document.documentElement.removeAttribute('data-theme');
   delete document.documentElement.dataset.theme;
   localStorage.clear();
 }

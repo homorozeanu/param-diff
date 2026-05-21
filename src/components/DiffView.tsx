@@ -2,11 +2,17 @@ import type { ParsedUrl } from '../types';
 import { flatten } from '../parse';
 
 type Props = {
-  parsedUrls: ParsedUrl[];
+  readonly parsedUrls: readonly ParsedUrl[];
 };
 
 const MISSING = Symbol('missing');
 type Cell = string | typeof MISSING;
+
+function cellClassName(c: Cell, allSame: boolean): string {
+  if (c === MISSING) return 'diff-cell diff-cell-missing';
+  if (allSame) return 'diff-cell diff-cell-same';
+  return 'diff-cell diff-cell-diff';
+}
 
 export function DiffView({ parsedUrls }: Props) {
   const active = parsedUrls
@@ -44,8 +50,9 @@ export function DiffView({ parsedUrls }: Props) {
     return <div className="diff-empty muted">No query params parsed yet.</div>;
   }
 
+  const slotIds = active.map(({ i }) => i);
   const rows = keys.map((k) => {
-    const cells: Cell[] = maps.map((m) => (m.has(k) ? m.get(k)! : MISSING));
+    const cells: Cell[] = maps.map((m) => m.get(k) ?? MISSING);
     const presentValues = cells.filter((c): c is string => c !== MISSING);
     const allSame =
       presentValues.length === cells.length &&
@@ -69,16 +76,7 @@ export function DiffView({ parsedUrls }: Props) {
             <tr key={key} className={allSame ? 'diff-row-same' : 'diff-row-diff'}>
               <td className="diff-key">{key}</td>
               {cells.map((c, idx) => (
-                <td
-                  key={idx}
-                  className={
-                    c === MISSING
-                      ? 'diff-cell diff-cell-missing'
-                      : allSame
-                        ? 'diff-cell diff-cell-same'
-                        : 'diff-cell diff-cell-diff'
-                  }
-                >
+                <td key={slotIds[idx]} className={cellClassName(c, allSame)}>
                   {c === MISSING ? <em className="muted">missing</em> : <code>{c}</code>}
                 </td>
               ))}
@@ -87,9 +85,18 @@ export function DiffView({ parsedUrls }: Props) {
         </tbody>
       </table>
       <div className="diff-legend muted">
-        <span className="legend-swatch swatch-same" /> identical across all URLs &nbsp;
-        <span className="legend-swatch swatch-diff" /> differs &nbsp;
-        <span className="legend-swatch swatch-missing" /> missing in this URL
+        <span className="legend-item">
+          <span className="legend-swatch swatch-same" />
+          <span>identical across all URLs</span>
+        </span>
+        <span className="legend-item">
+          <span className="legend-swatch swatch-diff" />
+          <span>differs</span>
+        </span>
+        <span className="legend-item">
+          <span className="legend-swatch swatch-missing" />
+          <span>missing in this URL</span>
+        </span>
       </div>
     </div>
   );

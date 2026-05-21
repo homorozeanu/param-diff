@@ -1,10 +1,10 @@
 import type { ChangeEvent } from 'react';
 
 type Props = {
-  index: number;
-  value: string;
-  onChange: (next: string) => void;
-  onRemove?: () => void;
+  readonly index: number;
+  readonly value: string;
+  readonly onChange: (next: string) => void;
+  readonly onRemove?: () => void;
 };
 
 export function UrlInput({ index, value, onChange, onRemove }: Props) {

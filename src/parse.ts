@@ -22,7 +22,7 @@ export function canDecodeFurther(value: string): boolean {
 // Detects "/path?a=1&b=2", "https://host/x?a=1", or even bare "a=1&b=2".
 // We require at least one '=' to consider it a query-bearing string.
 export function looksExpandable(value: string): boolean {
-  if (!value || !value.includes('=')) return false;
+  if (!value?.includes('=')) return false;
   if (value.includes('?')) return true;
   // Bare "a=1&b=2" — only treat as expandable if every &-segment has '=' and
   // keys look reasonable (no spaces, not too long).
