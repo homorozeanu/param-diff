@@ -1,6 +1,7 @@
 # ParamDiff
 
 [![CI](https://github.com/homorozeanu/param-diff/actions/workflows/ci.yml/badge.svg)](https://github.com/homorozeanu/param-diff/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/homorozeanu/param-diff)](https://github.com/homorozeanu/param-diff/releases/latest)
 
 ParamDiff — decode, expand, and diff URL query params
 
