@@ -27,7 +27,7 @@ npm run build    # produces a single self-contained dist/index.html
 npm run preview  # serve the built bundle
 ```
 
-The production build is one ~150 KB HTML file with all JS and CSS inlined — no external assets, openable directly from disk.
+The production build is one ~210 KB HTML file (~65 KB gzipped) with all JS and CSS inlined — no external assets, openable directly from disk.
 
 ## Releases
 
@@ -40,7 +40,7 @@ git push origin v0.1.0
 
 ## Stack
 
-- **Vite + React 18 + TypeScript** — single-page app, no backend.
+- **Vite + React 19 + TypeScript** — single-page app, no backend.
 - Plain CSS, no UI framework.
 - Zero runtime dependencies beyond React.
 
@@ -54,6 +54,7 @@ src/
                             # decodeParam, expandParam, resetParam, flatten
   types.ts                  # Param, ParsedUrl
   styles.css                # Dark theme
+  vite-env.d.ts             # Ambient Vite client types (CSS imports, etc.)
   components/
     UrlInput.tsx            # Single URL textarea + remove
     ParamList.tsx           # Table wrapper for one URL's params

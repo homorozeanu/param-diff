@@ -8,13 +8,13 @@ A small web app for inspecting and comparing URLs — paste 1–4 URLs, peel bac
 
 ## Download
 
-[**Download `index.html`**](https://github.com/homorozeanu/param-diff/releases/latest/download/index.html) — single self-contained file (~150 KB). Open it in any modern browser; no install, no server, no network needed.
+[**Download `index.html`**](https://github.com/homorozeanu/param-diff/releases/latest/download/index.html) — single self-contained file (~210 KB, ~65 KB gzipped). Open it in any modern browser; no install, no server, no network needed.
 
 See [release notes](https://github.com/homorozeanu/param-diff/releases/latest) for the changelog and other assets.
 
 ## How to use
 
-1. **Open the app.** Either visit a hosted instance, or download `index.html` from the [latest Release](https://github.com/homorozeanu/param-diff/releases/latest) and open it in any modern browser. The file is fully self-contained (~150 KB) — no install, no server, no network needed at runtime. Your URLs never leave the page.
+1. **Open the app.** Either visit a hosted instance, or download `index.html` from the [latest Release](https://github.com/homorozeanu/param-diff/releases/latest) and open it in any modern browser. The file is fully self-contained (~210 KB, ~65 KB gzipped) — no install, no server, no network needed at runtime. Your URLs never leave the page.
 2. **Paste a URL** into the first input. ParamDiff splits it at the first `?` and lists every query parameter as its own row.
 3. **Peel encoded values.** Click **Decode** on any row to apply one `decodeURIComponent` pass — click again for double-encoded values (`%253A → %3A → :`). The button disables once nothing further would change.
 4. **Drill into nested query strings.** When a value carries its own params (typical of OAuth `returnUrl` / `redirect_uri`), click **Expand** to split it into indented child rows. Each child has its own Decode/Expand/Reset, so you can recurse arbitrarily deep.

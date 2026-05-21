@@ -20,7 +20,7 @@ Node 22+ required; `.nvmrc` pins Node 24 for local + CI (CI reads `node-version-
 
 ## Architecture
 
-Single-page React 18 + TypeScript app, built by Vite with `vite-plugin-singlefile` so `npm run build` emits **one ~150 KB `dist/index.html`** with all JS and CSS inlined — that file is the shipped artifact (attached to GitHub Releases by `.github/workflows/release.yml` on `v*.*.*` tags). No backend, no runtime network, no persistence.
+Single-page React 19 + TypeScript app, built by Vite with `vite-plugin-singlefile` so `npm run build` emits **one ~210 KB `dist/index.html`** (~65 KB gzipped) with all JS and CSS inlined — that file is the shipped artifact (attached to GitHub Releases by `.github/workflows/release.yml` on `v*.*.*` tags). No backend, no runtime network, no persistence.
 
 ### The param tree
 
