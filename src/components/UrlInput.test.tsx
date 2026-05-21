@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UrlInput } from './UrlInput';
 
-function ControlledHarness({ onChange }: { onChange: (v: string) => void }) {
+function ControlledHarness({ onChange }: { readonly onChange: (v: string) => void }) {
   const [value, setValue] = useState('');
   return (
     <UrlInput
