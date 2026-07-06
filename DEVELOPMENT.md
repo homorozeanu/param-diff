@@ -62,7 +62,8 @@ src/
     ParamList.tsx           # Table wrapper for one URL's params
     ParamRow.tsx            # Recursive row with Decode/Expand/Reset
     DiffView.tsx            # Unified diff table across active URLs
-    HistoryPanel.tsx        # Collapsible saved-comparisons list (Restore/Delete)
+    HistoryPanel.tsx        # Collapsible saved-comparisons list
+    HistoryEntry.tsx        # One saved-comparison row (timestamp, preview, Restore/Delete)
 ```
 
 ## Persistence

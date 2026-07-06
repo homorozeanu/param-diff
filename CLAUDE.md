@@ -46,7 +46,8 @@ Components are thin and recursive where needed:
 - `ParamList` — table wrapper for one URL's top-level params.
 - `ParamRow` — recursive: renders itself, then renders child `ParamRow`s when `expanded`, threading the same `onDecode/onExpand/onReset` callbacks through.
 - `DiffView` — calls `flatten` on each `parsedUrl`, builds a union of `keyPath`s in first-seen order, then renders one row per key with one cell per URL (green/red/grey by equality/missing).
-- `HistoryPanel` — collapsible list of saved `Snapshot`s (timestamp + URL preview) with per-row Restore/Delete; renders nothing when history is empty.
+- `HistoryPanel` — collapsible list of saved `Snapshot`s; renders nothing when history is empty. Maps each snapshot to a `HistoryEntry` (container/item split mirroring `ParamList`/`ParamRow`).
+- `HistoryEntry` — one saved-comparison row (timestamp + URL preview, own `formatTime`/`preview` helpers) with Restore/Delete buttons that bind the snapshot id.
 
 A consequence worth knowing: **the diff reflects whatever decode/expand state the user has applied** — diffing two URLs fairly requires peeling them the same number of times. This is intentional, not a bug.
 
