@@ -14,6 +14,7 @@ This document covers building, contributing, and the internals. End users only n
   - grey = missing in that URL
 - The diff reflects whatever decode/expand state you've applied — peel both URLs the same number of times to compare like-with-like.
 - **Save & revert.** **Save comparison** snapshots the current slots (URLs plus their decode/expand state) into a **Saved comparisons** panel below the diff; each row offers Restore and Delete. The in-progress comparison auto-persists and saved snapshots are kept — both in `sessionStorage`, so they survive a reload but clear on tab close and are per-tab only. History is capped at 20 snapshots.
+- **Reset all.** Clears every URL and saved comparison in one action (behind a `confirm()`), resetting to a single empty slot; the diff and both `sessionStorage` keys clear as a consequence. Disabled when there's nothing to clear.
 
 ## Prerequisites
 

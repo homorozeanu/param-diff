@@ -24,6 +24,7 @@ See [release notes](https://github.com/homorozeanu/param-diff/releases/latest) f
 5. **Reset.** Click **Reset** to restore the original raw value and collapse any expansion on that row.
 6. **Compare.** Click **+ Add URL** for up to 4 URLs. The Diff section under the inputs lists every parameter key seen across them, with one cell per URL — green when all match, red when they differ, grey when missing in that URL.
 7. **Save & revert.** Click **Save comparison** to snapshot the current URLs and their decode/expand state. Saved snapshots appear in the **Saved comparisons** panel below the diff — **Restore** any one to bring it back, or **Delete** to drop it. Your in-progress comparison and saved snapshots persist within the current browser tab (they survive a reload but clear when the tab closes).
+8. **Start fresh.** Click **Reset all** (confirmation required) to clear every URL and saved comparison at once — the diff empties too.
 
 > Tip: the diff reflects whatever decode/expand state you've applied. To compare two URLs fairly, peel them the same number of times.
 

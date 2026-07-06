@@ -344,6 +344,11 @@ code {
   border-color: var(--border);
 }
 
+.btn-danger:hover:not(:disabled) {
+  border-color: var(--diff-text);
+  color: var(--diff-text);
+}
+
 .btn-add {
   align-self: flex-start;
   padding: 0.5rem 1rem;

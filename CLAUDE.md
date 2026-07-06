@@ -39,7 +39,7 @@ The core data structure is a recursive `Param` tree (`src/types.ts`). Each `Para
 
 `App.tsx` owns an array of `Slot { id, raw, parsed }` (1–4 entries, `MAX_URLS = 4`; `Slot`/`Snapshot` types live in `src/types.ts`). Editing a URL re-runs `parseUrl` for that slot only. Per-row Decode/Expand/Reset clicks bubble up as `(slotIdx, paramId)` and route through `mutateParams` → `updateParamById` → the matching `parse.ts` operation, so the param tree is the single source of truth and the diff recomputes via `useMemo` over `parsedUrls`.
 
-`App.tsx` also owns a `Snapshot[]` history. **Save comparison** deep-clones the current slots into a snapshot; the `HistoryPanel` component (below `DiffView`) lists them with Restore/Delete. Restore deep-clones a snapshot's slots back into state and calls `reserveIds` on each.
+`App.tsx` also owns a `Snapshot[]` history. **Save comparison** deep-clones the current slots into a snapshot; the `HistoryPanel` component (below `DiffView`) lists them with Restore/Delete. Restore deep-clones a snapshot's slots back into state and calls `reserveIds` on each. **Reset all** (`confirm()`-guarded, enabled only when `hasContent || history.length > 0`) sets `slots` back to one `emptySlot()` and `history` to `[]`; the diff and both `sessionStorage` keys clear implicitly via the derived `parsedUrls` memo and the `[slots]`/`[history]` writer effects.
 
 Components are thin and recursive where needed:
 - `UrlInput` — textarea + remove button for one slot.

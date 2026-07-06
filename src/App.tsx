@@ -111,6 +111,14 @@ export default function App() {
   const deleteSnapshot = (id: string) =>
     setHistory((prev) => prev.filter((s) => s.id !== id));
 
+  const canReset = hasContent || history.length > 0;
+
+  const resetAll = () => {
+    if (!globalThis.confirm('Clear all URLs and saved comparisons? This cannot be undone.')) return;
+    setSlots([emptySlot()]);
+    setHistory([]);
+  };
+
   const parsedUrls = useMemo(() => slots.map((s) => s.parsed), [slots]);
 
   return (
@@ -203,6 +211,15 @@ export default function App() {
             title={hasContent ? 'Save this comparison to history' : 'Enter a URL first'}
           >
             Save comparison
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={resetAll}
+            disabled={!canReset}
+            title={canReset ? 'Clear all URLs and saved comparisons' : 'Nothing to reset'}
+          >
+            Reset all
           </button>
         </div>
       </section>

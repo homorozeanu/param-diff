@@ -185,6 +185,67 @@ describe('App — comparison history', () => {
   });
 });
 
+describe('App — reset all', () => {
+  const CURRENT_KEY = 'paramdiff.current.v1';
+  const HISTORY_KEY = 'paramdiff.history.v1';
+
+  it('is disabled on a fresh render and enabled once a URL is entered', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const reset = screen.getByRole('button', { name: /reset all/i });
+    expect(reset).toBeDisabled();
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    expect(reset).toBeEnabled();
+  });
+
+  it('stays enabled when only a saved snapshot remains (no URL content)', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+    await user.clear(screen.getByLabelText('URL 1'));
+    // No URL content, but a snapshot exists → still resettable.
+    expect(screen.getByRole('button', { name: /reset all/i })).toBeEnabled();
+  });
+
+  it('clears URLs, history, the diff, and both storage keys when confirmed', async () => {
+    const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /add url/i }));
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.type(screen.getByLabelText('URL 2'), 'https://y.com/?b=2');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+    expect(screen.getByText(/Saved comparisons/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /reset all/i }));
+
+    expect(confirmSpy).toHaveBeenCalledOnce();
+    // One empty slot remains; extra slot gone.
+    expect(screen.getByLabelText('URL 1')).toHaveValue('');
+    expect(screen.queryByLabelText('URL 2')).not.toBeInTheDocument();
+    // History panel gone, diff back to its empty prompt.
+    expect(screen.queryByText(/Saved comparisons/)).not.toBeInTheDocument();
+    expect(screen.getByText(/add a second url to enable diff/i)).toBeInTheDocument();
+    // Storage reflects the cleared state.
+    expect(JSON.parse(sessionStorage.getItem(CURRENT_KEY)!)).toHaveLength(1);
+    expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY)!)).toEqual([]);
+  });
+
+  it('is a no-op when the confirm dialog is cancelled', async () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+
+    await user.click(screen.getByRole('button', { name: /reset all/i }));
+
+    expect(screen.getByLabelText('URL 1')).toHaveValue('https://x.com/?a=1');
+    expect(screen.getByText(/Saved comparisons/)).toBeInTheDocument();
+  });
+});
+
 describe('App — theme toggle', () => {
   it('reads the initial theme from data-theme on <html> when present', () => {
     document.documentElement.dataset.theme = 'light';
