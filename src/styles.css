@@ -466,7 +466,8 @@ code {
   align-items: center;
 }
 
-.btn-save {
+.btn-save,
+.btn-danger {
   padding: 0.5rem 1rem;
   font-size: 13px;
 }
