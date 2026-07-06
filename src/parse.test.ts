@@ -11,6 +11,7 @@ import {
   updateParamById,
   flatten,
   makeParam,
+  reserveIds,
 } from './parse';
 
 describe('decodeOnce', () => {
@@ -324,5 +325,29 @@ describe('flatten', () => {
       { keyPath: 'q.a', value: '1' },
       { keyPath: 'q.b', value: '2' },
     ]);
+  });
+});
+
+describe('reserveIds', () => {
+  it('bumps the counter so a later makeParam id exceeds all restored ids', () => {
+    // Simulate a restored tree whose ids were minted in a previous session.
+    reserveIds([{ ...makeParam('a', '1'), id: 'p900' }]);
+    const fresh = makeParam('b', '2');
+    const n = Number(/^p(\d+)$/.exec(fresh.id)![1]);
+    expect(n).toBeGreaterThan(900);
+  });
+
+  it('walks nestedParams', () => {
+    const nested = { ...makeParam('c', '3'), id: 'p5000' };
+    const parent = { ...makeParam('d', '4'), id: 'p10', expanded: true, nestedParams: [nested] };
+    reserveIds([parent]);
+    const fresh = makeParam('e', '5');
+    const n = Number(/^p(\d+)$/.exec(fresh.id)![1]);
+    expect(n).toBeGreaterThan(5000);
+  });
+
+  it('ignores ids that are not of the p<N> form', () => {
+    // A non-matching id must not throw or corrupt the counter.
+    expect(() => reserveIds([{ ...makeParam('f', '6'), id: 'weird-uuid' }])).not.toThrow();
   });
 });

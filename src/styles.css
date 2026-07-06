@@ -451,3 +451,98 @@ code {
 .swatch-same { background: var(--same); }
 .swatch-diff { background: var(--diff); }
 .swatch-missing { background: var(--missing); }
+
+/* URL actions --------------------------------------------------------------- */
+
+.url-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn-save {
+  padding: 0.5rem 1rem;
+  font-size: 13px;
+}
+
+/* History panel ------------------------------------------------------------- */
+
+.history-panel {
+  margin-top: 1.5rem;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+}
+
+.history-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.history-caret {
+  color: var(--muted);
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+
+.history-caret-open {
+  transform: rotate(90deg);
+}
+
+.history-list {
+  list-style: none;
+  margin: 0.75rem 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+.history-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.history-time {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.history-preview {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}

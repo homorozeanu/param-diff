@@ -13,6 +13,7 @@ This document covers building, contributing, and the internals. End users only n
   - red = differs
   - grey = missing in that URL
 - The diff reflects whatever decode/expand state you've applied — peel both URLs the same number of times to compare like-with-like.
+- **Save & revert.** **Save comparison** snapshots the current slots (URLs plus their decode/expand state) into a **Saved comparisons** panel below the diff; each row offers Restore and Delete. The in-progress comparison auto-persists and saved snapshots are kept — both in `sessionStorage`, so they survive a reload but clear on tab close and are per-tab only. History is capped at 20 snapshots.
 
 ## Prerequisites
 
@@ -49,10 +50,11 @@ git push origin v0.1.0
 ```
 src/
   main.tsx                  # React entry
-  App.tsx                   # 1–4 URL slots, wiring, diff
+  App.tsx                   # 1–4 URL slots, wiring, diff, save/restore history
   parse.ts                  # parseUrl, decodeOnce, looksExpandable, splitQuery,
-                            # decodeParam, expandParam, resetParam, flatten
-  types.ts                  # Param, ParsedUrl
+                            # decodeParam, expandParam, resetParam, flatten, reserveIds
+  session.ts                # sessionStorage IO for current slots + saved snapshots
+  types.ts                  # Param, ParsedUrl, Slot, Snapshot
   styles.css                # Dark theme
   vite-env.d.ts             # Ambient Vite client types (CSS imports, etc.)
   components/
@@ -60,7 +62,14 @@ src/
     ParamList.tsx           # Table wrapper for one URL's params
     ParamRow.tsx            # Recursive row with Decode/Expand/Reset
     DiffView.tsx            # Unified diff table across active URLs
+    HistoryPanel.tsx        # Collapsible saved-comparisons list (Restore/Delete)
 ```
+
+## Persistence
+
+Per-tab only, via `sessionStorage` (theme uses `localStorage` separately). `src/session.ts` is the single place that touches storage; every access is wrapped so corrupt data, quota errors, or disabled storage degrade to a safe default rather than throwing. Two keys, both `.v1`-versioned: `paramdiff.current.v1` (the live `Slot[]`) and `paramdiff.history.v1` (a `Snapshot[]`, capped at `MAX_HISTORY = 20`).
+
+`App.tsx` mirrors the theme idiom — a lazy `useState` initializer reads storage, a `useEffect` writes on change. On restore the stored param trees are rehydrated **verbatim**, never re-parsed: param `id`s come from a module-global counter in `parse.ts` that resets on page load, so re-parsing would mint colliding ids and break `updateParamById`. `reserveIds` walks a restored tree and advances that counter past the highest `p<N>` seen, so params created after a restore (e.g. a later Expand) stay collision-free.
 
 ## Testing
 

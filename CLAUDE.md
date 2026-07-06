@@ -20,7 +20,7 @@ Node 22+ required; `.nvmrc` pins Node 24 for local + CI (CI reads `node-version-
 
 ## Architecture
 
-Single-page React 19 + TypeScript app, built by Vite with `vite-plugin-singlefile` so `npm run build` emits **one ~210 KB `dist/index.html`** (~65 KB gzipped) with all JS and CSS inlined — that file is the shipped artifact (attached to GitHub Releases by `.github/workflows/release.yml` on `v*.*.*` tags). No backend, no runtime network, no persistence.
+Single-page React 19 + TypeScript app, built by Vite with `vite-plugin-singlefile` so `npm run build` emits **one ~210 KB `dist/index.html`** (~65 KB gzipped) with all JS and CSS inlined — that file is the shipped artifact (attached to GitHub Releases by `.github/workflows/release.yml` on `v*.*.*` tags). No backend, no runtime network. The only persistence is per-tab `sessionStorage` (see Persistence below) — nothing leaves the browser.
 
 ### The param tree
 
@@ -33,22 +33,30 @@ The core data structure is a recursive `Param` tree (`src/types.ts`). Each `Para
 - `resetParam` — restores `rawValue` and collapses any expansion.
 - `updateParamById` — walks the tree to find a param by id and applies an updater immutably; this is how `App.tsx` dispatches a single-param edit without re-parsing the whole URL.
 - `flatten` — projects the tree to `{ keyPath, value }[]` for diffing. Dotted paths (`returnUrl.client_id`) for nested keys; expanded parents emit a synthetic `<path> (base)` entry for the prefix portion.
+- `reserveIds` — walks a restored tree and advances the module-global `idCounter` past the highest `p<N>` id found. Param ids are a process-global sequential counter (`nextId`), reset to 0 on page load and **not** content-derived — so persisted state must be rehydrated verbatim (never re-parsed) and `reserveIds` called on it, or later `makeParam` calls (e.g. a post-restore Expand) would mint colliding ids and break `updateParamById`.
 
 ### State and component flow
 
-`App.tsx` owns an array of `Slot { raw, parsed }` (1–4 entries, `MAX_URLS = 4`). Editing a URL re-runs `parseUrl` for that slot only. Per-row Decode/Expand/Reset clicks bubble up as `(slotIdx, paramId)` and route through `mutateParams` → `updateParamById` → the matching `parse.ts` operation, so the param tree is the single source of truth and the diff recomputes via `useMemo` over `parsedUrls`.
+`App.tsx` owns an array of `Slot { id, raw, parsed }` (1–4 entries, `MAX_URLS = 4`; `Slot`/`Snapshot` types live in `src/types.ts`). Editing a URL re-runs `parseUrl` for that slot only. Per-row Decode/Expand/Reset clicks bubble up as `(slotIdx, paramId)` and route through `mutateParams` → `updateParamById` → the matching `parse.ts` operation, so the param tree is the single source of truth and the diff recomputes via `useMemo` over `parsedUrls`.
+
+`App.tsx` also owns a `Snapshot[]` history. **Save comparison** deep-clones the current slots into a snapshot; the `HistoryPanel` component (below `DiffView`) lists them with Restore/Delete. Restore deep-clones a snapshot's slots back into state and calls `reserveIds` on each.
 
 Components are thin and recursive where needed:
 - `UrlInput` — textarea + remove button for one slot.
 - `ParamList` — table wrapper for one URL's top-level params.
 - `ParamRow` — recursive: renders itself, then renders child `ParamRow`s when `expanded`, threading the same `onDecode/onExpand/onReset` callbacks through.
 - `DiffView` — calls `flatten` on each `parsedUrl`, builds a union of `keyPath`s in first-seen order, then renders one row per key with one cell per URL (green/red/grey by equality/missing).
+- `HistoryPanel` — collapsible list of saved `Snapshot`s (timestamp + URL preview) with per-row Restore/Delete; renders nothing when history is empty.
 
 A consequence worth knowing: **the diff reflects whatever decode/expand state the user has applied** — diffing two URLs fairly requires peeling them the same number of times. This is intentional, not a bug.
 
 ### Theme
 
 `App.tsx` reads/writes `document.documentElement.dataset.theme` and `localStorage['theme']`; `getInitialTheme()` falls back to `prefers-color-scheme`. `styles.css` is the only stylesheet (no UI framework).
+
+### Persistence
+
+`src/session.ts` is the only module that touches storage, all via **`sessionStorage`** (per-tab: survives reload, cleared on tab close, not shared across tabs) — separate from theme's `localStorage`. Every access is wrapped so corrupt data / quota / disabled storage degrade to a safe default. Two `.v1`-versioned keys: `paramdiff.current.v1` (live `Slot[]`) and `paramdiff.history.v1` (`Snapshot[]`, capped at `MAX_HISTORY = 20`). `App.tsx` follows the same lazy-`useState` + writer-`useEffect` idiom as theme (`getInitialSlots`/`loadHistory` readers, `saveCurrent`/`saveHistory` writers). Restore hydrates verbatim + `reserveIds` — see the param-tree section for why re-parsing on restore would corrupt ids.
 
 ## Testing
 
