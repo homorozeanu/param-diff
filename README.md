@@ -23,6 +23,8 @@ See [release notes](https://github.com/homorozeanu/param-diff/releases/latest) f
 4. **Drill into nested query strings.** When a value carries its own params (typical of OAuth `returnUrl` / `redirect_uri`), click **Expand** to split it into indented child rows. Each child has its own Decode/Expand/Reset, so you can recurse arbitrarily deep.
 5. **Reset.** Click **Reset** to restore the original raw value and collapse any expansion on that row.
 6. **Compare.** Click **+ Add URL** for up to 4 URLs. The Diff section under the inputs lists every parameter key seen across them, with one cell per URL — green when all match, red when they differ, grey when missing in that URL.
+7. **Save & revert.** Click **Save comparison** to snapshot the current URLs and their decode/expand state. Saved snapshots appear in the **Saved comparisons** panel below the diff — **Restore** any one to bring it back, or **Delete** to drop it. Your in-progress comparison and saved snapshots persist within the current browser tab (they survive a reload but clear when the tab closes).
+8. **Start fresh.** Click **Reset all** (confirmation required) to clear every URL and saved comparison at once — the diff empties too.
 
 > Tip: the diff reflects whatever decode/expand state you've applied. To compare two URLs fairly, peel them the same number of times.
 
@@ -38,7 +40,7 @@ See [release notes](https://github.com/homorozeanu/param-diff/releases/latest) f
 - Param keys are matched literally for diffing — if URL A uses `client_id` and URL B uses `clientId`, they show as separate rows.
 - Bare query strings (`a=1&b=2` with no `?`) are detected by Expand only when keys look conservative — this avoids false positives on prose values.
 - Repeated keys (`?tag=a&tag=b`) keep both, but the diff key path is the same for both, so the second one wins in the per-URL flat map. Rare in practice.
-- No persistence — refreshing the page clears all inputs.
+- Persistence is per-tab only, via `sessionStorage` — your current comparison and saved snapshots survive a reload but are cleared when the tab closes, and are not shared across tabs. Nothing is sent anywhere. History is capped at 20 snapshots (oldest drop off).
 
 ## Development
 

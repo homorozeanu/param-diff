@@ -19,3 +19,17 @@ export type ParsedUrl = {
   base: string;
   params: Param[];
 };
+
+// One URL entry in the app: the raw text plus its parsed param tree.
+export type Slot = {
+  id: string;
+  raw: string;
+  parsed: ParsedUrl;
+};
+
+// A saved comparison, revertable from the history panel.
+export type Snapshot = {
+  id: string;
+  savedAt: number;
+  slots: Slot[];
+};

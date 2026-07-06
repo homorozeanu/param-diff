@@ -53,6 +53,20 @@ export function splitQuery(value: string): { base: string; pairs: { key: string;
   return { base, pairs };
 }
 
+// Advance idCounter past the highest `p<N>` id found in a restored param tree,
+// so params created after a restore (e.g. a later Expand) can't collide with
+// ids that were persisted and rehydrated verbatim.
+export function reserveIds(params: Param[]): void {
+  const walk = (ps: Param[]) => {
+    for (const p of ps) {
+      const m = /^p(\d+)$/.exec(p.id);
+      if (m) idCounter = Math.max(idCounter, Number(m[1]));
+      if (p.nestedParams) walk(p.nestedParams);
+    }
+  };
+  walk(params);
+}
+
 export function makeParam(key: string, rawValue: string): Param {
   return {
     id: nextId(),

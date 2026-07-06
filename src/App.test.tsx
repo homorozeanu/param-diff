@@ -32,6 +32,7 @@ function resetThemeEnvironment() {
 
 beforeEach(() => {
   resetThemeEnvironment();
+  sessionStorage.clear();
   setMatchMedia(false); // default: dark preferred
 });
 
@@ -130,6 +131,118 @@ describe('App — end-to-end interaction', () => {
     const decodeButtonsAfter = screen.getAllByRole('button', { name: 'Decode' });
     expect(decodeButtonsAfter[0]).toBeDisabled(); // URL 1: nothing left to decode
     expect(decodeButtonsAfter[1]).toBeEnabled();  // URL 2: untouched
+  });
+});
+
+describe('App — comparison history', () => {
+  it('disables Save comparison until a URL is entered', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const save = screen.getByRole('button', { name: /save comparison/i });
+    expect(save).toBeDisabled();
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    expect(save).toBeEnabled();
+  });
+
+  it('saves, then restores a prior comparison after editing', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+
+    // History panel now shows the saved entry.
+    expect(screen.getByText('Saved comparisons (1)')).toBeInTheDocument();
+
+    // Edit the URL away.
+    await user.clear(screen.getByLabelText('URL 1'));
+    await user.type(screen.getByLabelText('URL 1'), 'https://z.com/?b=9');
+    expect(screen.getByLabelText('URL 1')).toHaveValue('https://z.com/?b=9');
+
+    // Restore brings back the saved URLs.
+    await user.click(screen.getByRole('button', { name: 'Restore' }));
+    expect(screen.getByLabelText('URL 1')).toHaveValue('https://x.com/?a=1');
+  });
+
+  it('deletes a saved comparison', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+    expect(screen.getByText('Saved comparisons (1)')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    // Panel disappears when empty.
+    expect(screen.queryByText(/Saved comparisons/)).not.toBeInTheDocument();
+  });
+
+  it('restores entered URLs from sessionStorage on remount (tab reload)', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://persist.me/?k=v');
+    unmount();
+    // Simulate a reload: a fresh App reads the persisted current state.
+    render(<App />);
+    expect(screen.getByLabelText('URL 1')).toHaveValue('https://persist.me/?k=v');
+  });
+});
+
+describe('App — reset all', () => {
+  const CURRENT_KEY = 'paramdiff.current.v1';
+  const HISTORY_KEY = 'paramdiff.history.v1';
+
+  it('is disabled on a fresh render and enabled once a URL is entered', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const reset = screen.getByRole('button', { name: /reset all/i });
+    expect(reset).toBeDisabled();
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    expect(reset).toBeEnabled();
+  });
+
+  it('stays enabled when only a saved snapshot remains (no URL content)', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+    await user.clear(screen.getByLabelText('URL 1'));
+    // No URL content, but a snapshot exists → still resettable.
+    expect(screen.getByRole('button', { name: /reset all/i })).toBeEnabled();
+  });
+
+  it('clears URLs, history, the diff, and both storage keys when confirmed', async () => {
+    const confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /add url/i }));
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.type(screen.getByLabelText('URL 2'), 'https://y.com/?b=2');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+    expect(screen.getByText(/Saved comparisons/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /reset all/i }));
+
+    expect(confirmSpy).toHaveBeenCalledOnce();
+    // One empty slot remains; extra slot gone.
+    expect(screen.getByLabelText('URL 1')).toHaveValue('');
+    expect(screen.queryByLabelText('URL 2')).not.toBeInTheDocument();
+    // History panel gone, diff back to its empty prompt.
+    expect(screen.queryByText(/Saved comparisons/)).not.toBeInTheDocument();
+    expect(screen.getByText(/add a second url to enable diff/i)).toBeInTheDocument();
+    // Storage reflects the cleared state.
+    expect(JSON.parse(sessionStorage.getItem(CURRENT_KEY)!)).toHaveLength(1);
+    expect(JSON.parse(sessionStorage.getItem(HISTORY_KEY)!)).toEqual([]);
+  });
+
+  it('is a no-op when the confirm dialog is cancelled', async () => {
+    vi.spyOn(globalThis, 'confirm').mockReturnValue(false);
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText('URL 1'), 'https://x.com/?a=1');
+    await user.click(screen.getByRole('button', { name: /save comparison/i }));
+
+    await user.click(screen.getByRole('button', { name: /reset all/i }));
+
+    expect(screen.getByLabelText('URL 1')).toHaveValue('https://x.com/?a=1');
+    expect(screen.getByText(/Saved comparisons/)).toBeInTheDocument();
   });
 });
 

@@ -1,28 +1,43 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ParsedUrl } from './types';
+import type { Slot, Snapshot } from './types';
 import {
   parseUrl,
   decodeParam,
   expandParam,
   resetParam,
   updateParamById,
+  reserveIds,
 } from './parse';
+import {
+  loadCurrent,
+  saveCurrent,
+  loadHistory,
+  saveHistory,
+  MAX_HISTORY,
+} from './session';
 import { UrlInput } from './components/UrlInput';
 import { ParamList } from './components/ParamList';
 import { DiffView } from './components/DiffView';
+import { HistoryPanel } from './components/HistoryPanel';
 
 const MAX_URLS = 4;
 
 type Theme = 'dark' | 'light';
 
-type Slot = {
-  id: string;
-  raw: string;
-  parsed: ParsedUrl;
-};
-
 function emptySlot(): Slot {
   return { id: crypto.randomUUID(), raw: '', parsed: { base: '', params: [] } };
+}
+
+// Restore the current comparison from sessionStorage, rehydrating the stored
+// param trees verbatim (never re-parsing — that would mint fresh ids) and
+// reconciling the id counter so later Expand/Decode can't collide.
+function getInitialSlots(): Slot[] {
+  const stored = loadCurrent();
+  if (stored && stored.length > 0) {
+    stored.forEach((s) => reserveIds(s.parsed.params));
+    return stored;
+  }
+  return [emptySlot()];
 }
 
 function getInitialTheme(): Theme {
@@ -34,13 +49,17 @@ function getInitialTheme(): Theme {
 }
 
 export default function App() {
-  const [slots, setSlots] = useState<Slot[]>([emptySlot()]);
+  const [slots, setSlots] = useState<Slot[]>(getInitialSlots);
+  const [history, setHistory] = useState<Snapshot[]>(loadHistory);
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => saveCurrent(slots), [slots]);
+  useEffect(() => saveHistory(history), [history]);
 
   const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
 
@@ -69,6 +88,36 @@ export default function App() {
   const onDecode = (idx: number) => (id: string) => mutateParams(idx, id, decodeParam);
   const onExpand = (idx: number) => (id: string) => mutateParams(idx, id, expandParam);
   const onReset = (idx: number) => (id: string) => mutateParams(idx, id, resetParam);
+
+  const hasContent = slots.some((s) => s.raw.trim());
+
+  const saveComparison = () => {
+    const snapshot: Snapshot = {
+      id: crypto.randomUUID(),
+      savedAt: Date.now(),
+      slots: structuredClone(slots),
+    };
+    setHistory((prev) => [snapshot, ...prev].slice(0, MAX_HISTORY));
+  };
+
+  const restoreSnapshot = (id: string) => {
+    const snap = history.find((s) => s.id === id);
+    if (!snap) return;
+    const restored = structuredClone(snap.slots);
+    restored.forEach((s) => reserveIds(s.parsed.params));
+    setSlots(restored);
+  };
+
+  const deleteSnapshot = (id: string) =>
+    setHistory((prev) => prev.filter((s) => s.id !== id));
+
+  const canReset = hasContent || history.length > 0;
+
+  const resetAll = () => {
+    if (!globalThis.confirm('Clear all URLs and saved comparisons? This cannot be undone.')) return;
+    setSlots([emptySlot()]);
+    setHistory([]);
+  };
 
   const parsedUrls = useMemo(() => slots.map((s) => s.parsed), [slots]);
 
@@ -148,17 +197,43 @@ export default function App() {
             />
           </div>
         ))}
-        {slots.length < MAX_URLS && (
-          <button type="button" className="btn btn-add" onClick={addUrl}>
-            + Add URL ({slots.length}/{MAX_URLS})
+        <div className="url-actions">
+          {slots.length < MAX_URLS && (
+            <button type="button" className="btn btn-add" onClick={addUrl}>
+              + Add URL ({slots.length}/{MAX_URLS})
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-save"
+            onClick={saveComparison}
+            disabled={!hasContent}
+            title={hasContent ? 'Save this comparison to history' : 'Enter a URL first'}
+          >
+            Save comparison
           </button>
-        )}
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={resetAll}
+            disabled={!canReset}
+            title={canReset ? 'Clear all URLs and saved comparisons' : 'Nothing to reset'}
+          >
+            Reset all
+          </button>
+        </div>
       </section>
 
       <section className="diff-section">
         <h2>Diff</h2>
         <DiffView parsedUrls={parsedUrls} />
       </section>
+
+      <HistoryPanel
+        history={history}
+        onRestore={restoreSnapshot}
+        onDelete={deleteSnapshot}
+      />
     </div>
   );
 }
