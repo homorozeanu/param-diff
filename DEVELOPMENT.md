@@ -27,6 +27,7 @@ npm install
 npm run dev      # http://localhost:5173
 npm run build    # produces a single self-contained dist/index.html
 npm run preview  # serve the built bundle
+npm run typecheck  # type-check only (tsc -b), without bundling
 ```
 
 The production build is one ~210 KB HTML file (~65 KB gzipped) with all JS and CSS inlined — no external assets, openable directly from disk.

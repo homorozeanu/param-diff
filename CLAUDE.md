@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev               # Vite dev server at http://localhost:5173
 npm run build             # tsc -b && vite build → single self-contained dist/index.html
 npm run preview           # serve the built bundle
+npm run typecheck         # tsc -b only (no bundle); also a CI step before tests
 npm test                  # vitest run (one-off, used by CI)
 npm run test:watch        # vitest watch mode
 npm run test:coverage     # v8 coverage (text + json-summary reporters)
